@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "oxlint",
-    "format": "prettier src/. --write"
+    "format": "prettier src/. --write",
+    "dev": "tsx --watch src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +19,14 @@
     "oxlint": "1.93.0",
     "oxlint-tsgolint": "7.0.2006",
     "prettier": "3.9.10",
+    "tsx": "^4.23.15",
     "typescript": "7.0.2"
   },
   "dependencies": {
     "@types/dotenv": "^6.1.1",
     "dotenv": "^18.0.10",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0"
   }
 }
