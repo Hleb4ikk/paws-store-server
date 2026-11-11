@@ -1,0 +1,57 @@
+// use prisma-8
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id            Uuid               @id @default(sql`gen_random_uuid()`)
+  email         String             @unique
+  password_hash Varchar()
+  role          Role               @default(CUSTOMER)        
+  createdAt     DateTime           @default(now())
+
+  cartItems     CartItems[]
+}
+
+model Product {
+  id             Uuid   @id @default(sql`gen_random_uuid()`)
+  title          String   @unique
+  description    String
+  price          Decimal 
+  rating         Float    @default(0)
+  stock_quantity Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  images         Image[]
+  cartItems      CartItems[]
+}
+
+model CartItems {
+  id        String  @id @default(sql`gen_random_uuid()`)
+  userId    Uuid
+  productId Uuid
+  quantity  Int     @default(1)
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Image {
+  id        String  @id @default(sql`gen_random_uuid()`)
+  url       String  
+  
+  productId Uuid  
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Promocode {
+  id                  Uuid     @id @default(sql`gen_random_uuid()`)
+  code                String   @unique
+  discount_percentage Int
+  is_active           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+}
