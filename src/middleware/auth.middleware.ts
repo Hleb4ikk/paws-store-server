@@ -1,0 +1,56 @@
+import type { NextFunction, Request, RequestHandler, Response } from "express";
+import jwt from "jsonwebtoken";
+import { config } from "../configuration/config.js";
+import { forbidden, unauthorized } from "../utils/AppError.js";
+import type { UserRole } from "../types/express.js";
+
+interface JwtPayload {
+  sub: string;
+  role: UserRole;
+}
+
+export const signToken = (userId: string, role: UserRole): string => {
+  const options: jwt.SignOptions = {
+    expiresIn: config.JWT_EXPIRES_IN as NonNullable<
+      jwt.SignOptions["expiresIn"]
+    >,
+  };
+  return jwt.sign({ sub: userId, role }, config.JWT_SECRET, options);
+};
+
+export const authenticate: RequestHandler = (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) {
+    next(unauthorized());
+    return;
+  }
+
+  const token = header.slice("Bearer ".length);
+  try {
+    const payload = jwt.verify(token, config.JWT_SECRET) as JwtPayload;
+    req.user = { id: payload.sub, role: payload.role };
+    next();
+  } catch {
+    next(unauthorized("Invalid or expired token"));
+  }
+};
+
+export const requireAdmin: RequestHandler = (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    next(unauthorized());
+    return;
+  }
+  if (req.user.role !== "ADMIN") {
+    next(forbidden("Admin role required"));
+    return;
+  }
+  next();
+};
