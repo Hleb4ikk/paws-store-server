@@ -1,7 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../configuration/config.js";
-import { unauthorized } from "../utils/AppError.js";
+import { forbidden, unauthorized } from "../utils/AppError.js";
 import type { UserRole } from "../types/express.js";
 
 interface JwtPayload {
@@ -37,4 +37,20 @@ export const authenticate: RequestHandler = (
   } catch {
     next(unauthorized("Invalid or expired token"));
   }
+};
+
+export const requireAdmin: RequestHandler = (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    next(unauthorized());
+    return;
+  }
+  if (req.user.role !== "ADMIN") {
+    next(forbidden("Admin role required"));
+    return;
+  }
+  next();
 };
