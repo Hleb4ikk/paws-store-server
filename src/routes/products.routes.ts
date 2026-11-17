@@ -8,7 +8,13 @@ import {
 } from "../middleware/auth.middleware.js";
 import { validate, getValidated } from "../middleware/validate.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { notFound } from "../utils/AppError.js";
+import { badRequest, notFound } from "../utils/AppError.js";
+import {
+  buildCatalogCacheKey,
+  getCached,
+  invalidateCatalogCache,
+  setCached,
+} from "../services/cache.service.js";
 
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -48,6 +54,7 @@ type IdParam = { params: z.infer<typeof idParamSchema> };
 type CreateBody = { body: z.infer<typeof createProductSchema> };
 type UpdateBody = { body: z.infer<typeof updateProductSchema> };
 
+
 const serializeProduct = <T extends { price: unknown }>(product: T) => ({
   ...product,
   price: Number(product.price),
@@ -59,8 +66,16 @@ export const productsRouter = Router();
 productsRouter.get(
   "/",
   validate({ query: listQuerySchema }),
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
     const { query } = getValidated<ListQuery>(res);
+    const cacheKey = buildCatalogCacheKey(req.originalUrl);
+
+    const cached = await getCached(cacheKey);
+    if (cached) {
+      res.setHeader("X-Cache", "HIT");
+      res.type("application/json").send(cached);
+      return;
+    }
 
     let filtered = db.orm.public.Product;
     if (query.search) {
@@ -96,7 +111,7 @@ productsRouter.get(
       .offset((query.page - 1) * query.limit)
       .all();
 
-    res.json({
+    const payload = {
       items: items.map(serializeProduct),
       meta: {
         total_items: total,
@@ -104,7 +119,11 @@ productsRouter.get(
         current_page: query.page,
         limit: query.limit,
       },
-    });
+    };
+
+    await setCached(cacheKey, JSON.stringify(payload));
+    res.setHeader("X-Cache", "MISS");
+    res.json(payload);
   }),
 );
 
@@ -153,6 +172,7 @@ productsRouter.post(
         .first();
     });
 
+    await invalidateCatalogCache();
     res.status(201).json(serializeProduct(product!));
   }),
 );
@@ -195,11 +215,12 @@ productsRouter.patch(
       .include("images")
       .first();
 
+    await invalidateCatalogCache();
     res.json(serializeProduct(product!));
   }),
 );
 
-// DELETE /api/products/:id — delete product (admin only)
+// DELETE /api/products/:id — delete product (admin only), cache invalidated
 productsRouter.delete(
   "/:id",
   authenticate,
@@ -216,6 +237,7 @@ productsRouter.delete(
     // Images and cart items are removed by ON DELETE CASCADE
     await db.orm.public.Product.where({ id: params.id }).delete();
 
+    await invalidateCatalogCache();
     res.status(204).send();
   }),
 );
