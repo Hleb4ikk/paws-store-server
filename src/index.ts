@@ -2,6 +2,7 @@ import express from "express";
 import { config } from "./configuration/config.js";
 import { logger } from "./logger.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { productsRouter } from "./routes/products.routes.js";
 import {
   errorHandler,
   notFoundHandler,
@@ -16,6 +17,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/products", productsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
