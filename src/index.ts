@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { config } from "./configuration/config.js";
 import { logger } from "./logger.js";
 import { authRouter } from "./routes/auth.routes.js";
@@ -11,6 +12,15 @@ import {
 
 const app = express();
 
+const allowedOrigins = config.CORS_ORIGIN.split(",").map((origin) =>
+  origin.trim(),
+);
+app.use(
+  cors({
+    origin: allowedOrigins.includes("*") ? true : allowedOrigins,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
