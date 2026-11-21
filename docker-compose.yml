@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    container_name: paws-store-app
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 3000
+      DATABASE_URL: postgresql://paws-store-user:paws-store-password@postgres:5432/paws-store-db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: paws-store-postgres
+    environment:
+      POSTGRES_USER: paws-store-user
+      POSTGRES_PASSWORD: paws-store-password
+      POSTGRES_DB: paws-store-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - paws-store-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paws-store-user -d paws-store-db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: paws-store-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - paws-store-redisdata:/data
+
+volumes:
+  paws-store-pgdata:
+  paws-store-redisdata:
