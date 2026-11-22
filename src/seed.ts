@@ -9,6 +9,7 @@ const IMG = (id: string) =>
 const products = [
   {
     title: "Premium Stainless Steel Dog Bowl",
+    category: "Bowls & Feeders",
     price: "24.99",
     rating: 5,
     stock_quantity: 40,
@@ -22,6 +23,7 @@ const products = [
   },
   {
     title: "Multi-Level Cat Scratching Post",
+    category: "Toys & Scratchers",
     price: "89.99",
     rating: 4.5,
     stock_quantity: 15,
@@ -35,6 +37,7 @@ const products = [
   },
   {
     title: "Orthopedic Memory Foam Pet Bed",
+    category: "Beds & Furniture",
     price: "69.99",
     rating: 3.5,
     stock_quantity: 22,
@@ -48,6 +51,7 @@ const products = [
   },
   {
     title: "Reflective Nylon Dog Leash & Collar Set",
+    category: "Leashes & Collars",
     price: "32.99",
     rating: 4,
     stock_quantity: 60,
@@ -61,6 +65,7 @@ const products = [
   },
   {
     title: "Interactive Rubber Chew Ball",
+    category: "Toys & Scratchers",
     price: "15.99",
     rating: 5,
     stock_quantity: 120,
@@ -74,6 +79,7 @@ const products = [
   },
   {
     title: "Airline-Approved Pet Travel Carrier",
+    category: "Travel & Carriers",
     price: "54.99",
     rating: 4,
     stock_quantity: 18,
@@ -119,12 +125,20 @@ const main = async () => {
     const existing = await db.orm.public.Product
       .where((p) => p.title.eq(product.title))
       .first();
-    if (existing) continue;
+    if (existing) {
+      if (existing.category === "Uncategorized") {
+        await db.orm.public.Product.where({ id: existing.id }).update({
+          category: product.category,
+        });
+      }
+      continue;
+    }
 
     const created = await db.orm.public.Product.create({
       title: product.title,
       description: product.description,
       price: product.price,
+      category: product.category,
       rating: product.rating,
       stock_quantity: product.stock_quantity,
     });
