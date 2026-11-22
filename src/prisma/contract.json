@@ -188,6 +188,13 @@
           },
           "Product": {
             "fields": {
+              "category": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -275,6 +282,9 @@
             },
             "storage": {
               "fields": {
+                "category": {
+                  "column": "category"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -628,6 +638,15 @@
             },
             "Product": {
               "columns": {
+                "category": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "Uncategorized"
+                  },
+                  "nullable": false
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "dataType": "pg/timestamptz",
@@ -842,7 +861,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "58d296ae4e2b42bfe941db9cef7e82bed77b6d733cb978c0adaabd3e111d60b0"
+    "storageHash": "c709dba33838cf3edfe56057901ec66b7acee17a68c52b2b238ed5e6ccf95ac6"
   },
   "capabilities": {
     "postgres": {

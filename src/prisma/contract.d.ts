@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'58d296ae4e2b42bfe941db9cef7e82bed77b6d733cb978c0adaabd3e111d60b0'>;
+  StorageHashBase<'c709dba33838cf3edfe56057901ec66b7acee17a68c52b2b238ed5e6ccf95ac6'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -345,6 +345,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'product';
   };
   export type public_Product = {
+    category: FieldOutputTypes['public']['Product']['category'];
     createdAt: FieldOutputTypes['public']['Product']['createdAt'];
     description: FieldOutputTypes['public']['Product']['description'];
     id: FieldOutputTypes['public']['Product']['id'];
@@ -533,6 +534,16 @@ type ContractBase = Omit<
             };
             readonly Product: {
               columns: {
+                readonly category: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'Uncategorized'>;
+                  };
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -812,6 +823,10 @@ type ContractBase = Omit<
           };
           readonly Product: {
             readonly fields: {
+              readonly category: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -873,6 +888,7 @@ type ContractBase = Omit<
               readonly table: 'Product';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly category: { readonly column: 'category' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };

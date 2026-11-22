@@ -25,6 +25,7 @@ const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(12),
   search: z.string().trim().min(1).optional(),
+  category: z.string().trim().min(1).optional(),
   min_price: z.coerce.number().min(0).optional(),
   max_price: z.coerce.number().min(0).optional(),
   min_rating: z.coerce.number().min(0).max(5).optional(),
@@ -41,6 +42,7 @@ const createProductSchema = z.object({
   description: z.string().trim().min(1),
   price: z.number().positive(),
   rating: z.number().min(0).max(5).optional(),
+  category: z.string().trim().min(1).optional(),
   stock_quantity: z.number().int().min(0).optional(),
   images: z.array(z.url("Invalid image URL")).min(3, "At least 3 images required"),
 });
@@ -50,6 +52,7 @@ const updateProductSchema = z.object({
   description: z.string().trim().min(1).optional(),
   price: z.number().positive().optional(),
   rating: z.number().min(0).max(5).optional(),
+  category: z.string().trim().min(1).optional(),
   stock_quantity: z.number().int().min(0).optional(),
   images: z.array(z.url("Invalid image URL")).min(3).optional(),
 });
@@ -92,6 +95,10 @@ productsRouter.get(
       filtered = filtered.where((p) =>
         or(p.title.ilike(term), p.description.ilike(term)),
       );
+    }
+    if (query.category) {
+      const category = query.category;
+      filtered = filtered.where((p) => p.category.eq(category));
     }
     if (query.min_price !== undefined) {
       const min = String(query.min_price);
@@ -136,6 +143,21 @@ productsRouter.get(
   }),
 );
 
+// GET /api/products/categories — distinct product categories
+productsRouter.get(
+  "/categories",
+  asyncHandler(async (_req, res) => {
+    const groups = await db.orm.public.Product.groupBy("category").aggregate(
+      (a) => ({ count: a.count() }),
+    );
+    res.json({
+      categories: groups
+        .map((g) => ({ name: g.category, count: g.count }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    });
+  }),
+);
+
 // GET /api/products/:id — single product with images
 productsRouter.get(
   "/:id",
@@ -169,6 +191,7 @@ productsRouter.post(
         description: body.description,
         price: String(body.price),
         ...(body.rating !== undefined ? { rating: body.rating } : {}),
+        ...(body.category !== undefined ? { category: body.category } : {}),
         ...(body.stock_quantity !== undefined
           ? { stock_quantity: body.stock_quantity }
           : {}),
@@ -205,6 +228,7 @@ productsRouter.patch(
     if (body.description !== undefined) data["description"] = body.description;
     if (body.price !== undefined) data["price"] = String(body.price);
     if (body.rating !== undefined) data["rating"] = body.rating;
+    if (body.category !== undefined) data["category"] = body.category;
     if (body.stock_quantity !== undefined)
       data["stock_quantity"] = body.stock_quantity;
 
