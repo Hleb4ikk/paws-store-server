@@ -94,6 +94,14 @@ const products = [
 ];
 
 const main = async () => {
+  // Global seed flag: if the database was already seeded, skip everything
+  const seeded = await db.orm.public.AppMeta.first({ key: "seeded" });
+  if (seeded) {
+    logger.info("Database was already seeded — skipping");
+    await db.close();
+    return;
+  }
+
   const adminEmail = process.env["SEED_ADMIN_EMAIL"] ?? "admin@paws.store";
   const adminPassword = process.env["SEED_ADMIN_PASSWORD"] ?? "admin123";
 
@@ -148,6 +156,7 @@ const main = async () => {
     logger.info(`Product created: ${product.title}`);
   }
 
+  await db.orm.public.AppMeta.create({ key: "seeded", value: "true" });
   logger.info("Seeding finished");
   await db.close();
 };

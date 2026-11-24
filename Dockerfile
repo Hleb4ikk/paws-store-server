@@ -30,4 +30,4 @@ COPY --from=build --chown=node:node /app/prisma.config.ts ./
 USER node
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db migrate && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma db migrate && node dist/seed.js && node dist/index.js"]
