@@ -2,7 +2,7 @@
 
 REST API для интернет-магазина товаров для питомцев **Paws Store**.
 
-Стек: **Express 5 + TypeScript**, **PostgreSQL + Prisma 8**, **Redis** (кэш каталога), **Cloudflare R2** (изображения товаров), **JWT + bcrypt** (аутентификация), **Docker** (multi-stage build).
+Стек: **Express 5 + TypeScript**, **PostgreSQL + Prisma 8**, **Redis** (кэш каталога), **JWT + bcrypt** (аутентификация), **Docker** (multi-stage build).
 
 ## Функциональность
 
@@ -11,7 +11,6 @@ REST API для интернет-магазина товаров для пито
 - **Каталог:** поиск по подстроке (ILIKE), фильтры по цене и рейтингу, сортировка по цене/названию, пагинация — всё на уровне БД.
 - **Кэширование:** страницы каталога кэшируются в Redis (ключ — query-строка, TTL настраивается), кэш инвалидируется при любом изменении каталога.
 - **Корзина:** CRUD позиций + применение промокода (`SAVE10` — скидка 10%).
-- **Медиа:** загрузка изображений товаров в Cloudflare R2 (admin only).
 
 ## Быстрый старт (Docker)
 
@@ -56,11 +55,6 @@ npm run dev
 | `REDIS_URL` | Строка подключения Redis | `redis://localhost:6379` |
 | `CACHE_TTL_SECONDS` | TTL кэша каталога (60–120 с) | `90` |
 | `CORS_ORIGIN` | Разрешённые origins (через запятую) или `*` | `https://paws-store.vercel.app` |
-| `R2_ACCOUNT_ID` | Cloudflare account id | `<account-id>` |
-| `R2_ACCESS_KEY_ID` | R2 access key | `<key>` |
-| `R2_SECRET_ACCESS_KEY` | R2 secret key | `<secret>` |
-| `R2_BUCKET_NAME` | Имя бакета R2 | `paws-store-images` |
-| `R2_PUBLIC_URL` | Публичный базовый URL бакета | `https://images.example.com` |
 | `SEED_ADMIN_EMAIL` | Email админа для сид-скрипта | `admin@paws.store` |
 | `SEED_ADMIN_PASSWORD` | Пароль админа для сид-скрипта | `admin123` |
 
@@ -75,7 +69,6 @@ npm run dev
 | `POST` | `/api/products` | admin | Создать товар |
 | `PATCH` | `/api/products/:id` | admin | Обновить товар |
 | `DELETE` | `/api/products/:id` | admin | Удалить товар (+ инвалидация кэша) |
-| `POST` | `/api/products/:id/images` | admin | Загрузить изображение в R2 |
 | `GET` | `/api/cart` | customer | Корзина пользователя |
 | `POST` | `/api/cart/items` | customer | Добавить товар в корзину |
 | `PATCH` | `/api/cart/items/:id` | customer | Изменить количество |
@@ -94,7 +87,6 @@ npm run dev
 ## Деплой
 
 - **База данных:** PostgreSQL в [Neon](https://neon.tech) / [Supabase](https://supabase.com).
-- **Медиафайлы:** Cloudflare R2.
 - **Бэкенд:** деплоится из `Dockerfile` на [Render](https://render.com) или [Koyeb](https://koyeb.com).
 - **Фронтенд:** [paws-store](https://github.com/Hleb4ikk/paws-store) — CORS настраивается переменной `CORS_ORIGIN`.
 - **Документация API:** `/api/docs` (Swagger UI) на задеплоенном инстансе.

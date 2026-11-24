@@ -256,32 +256,6 @@ export const openapiDocument = {
         },
       },
     },
-    "/products/{id}/images": {
-      post: {
-        tags: ["Products"],
-        summary: "Upload a product image to Cloudflare R2 (admin only)",
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["image"],
-                properties: { image: { type: "string", format: "binary" } },
-              },
-            },
-          },
-        },
-        responses: {
-          "201": { description: "Image uploaded" },
-          "403": { description: "Admin role required" },
-        },
-      },
-    },
     "/cart": {
       get: {
         tags: ["Cart"],

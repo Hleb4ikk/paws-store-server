@@ -1,5 +1,4 @@
 import { Router } from "express";
-import multer from "multer";
 import { z } from "zod";
 import { or, orderByField } from "@prisma/orm-postgres/orm-client";
 import { db } from "../prisma/db.js";
@@ -16,10 +15,6 @@ import {
   invalidateCatalogCache,
   setCached,
 } from "../services/cache.service.js";
-import {
-  isStorageConfigured,
-  uploadProductImage,
-} from "../services/storage.service.js";
 
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -61,11 +56,6 @@ type ListQuery = { query: z.infer<typeof listQuerySchema> };
 type IdParam = { params: z.infer<typeof idParamSchema> };
 type CreateBody = { body: z.infer<typeof createProductSchema> };
 type UpdateBody = { body: z.infer<typeof updateProductSchema> };
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
 
 const serializeProduct = <T extends { price: unknown }>(product: T) => ({
   ...product,
@@ -275,37 +265,3 @@ productsRouter.delete(
   }),
 );
 
-// POST /api/products/:id/images — upload image to Cloudflare R2 (admin only)
-productsRouter.post(
-  "/:id/images",
-  authenticate,
-  requireAdmin,
-  upload.single("image"),
-  asyncHandler(async (req, res) => {
-    const parsed = idParamSchema.safeParse(req.params);
-    if (!parsed.success) {
-      throw badRequest("Invalid product id");
-    }
-
-    if (!isStorageConfigured()) {
-      throw badRequest("Image storage (Cloudflare R2) is not configured");
-    }
-    if (!req.file) {
-      throw badRequest("Image file is required (field name: image)");
-    }
-
-    const product = await db.orm.public.Product.first({ id: parsed.data.id });
-    if (!product) {
-      throw notFound("Product not found");
-    }
-
-    const url = await uploadProductImage(req.file.buffer, req.file.mimetype);
-    const image = await db.orm.public.Image.create({
-      productId: product.id,
-      url,
-    });
-
-    await invalidateCatalogCache();
-    res.status(201).json(image);
-  }),
-);
