@@ -56,3 +56,8 @@ model Promocode {
   is_active           Boolean  @default(false)
   createdAt           DateTime @default(now())
 }
+
+model AppMeta {
+  key   String @id
+  value String
+}

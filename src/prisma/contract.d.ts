@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c709dba33838cf3edfe56057901ec66b7acee17a68c52b2b238ed5e6ccf95ac6'>;
+  StorageHashBase<'2df10eee8c8aa250f1df0e83352cc83709668c945301ce082ee1bf0b44b3375b'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -328,6 +328,11 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 >;
 
 export namespace Models {
+  export type public_AppMeta = {
+    key: FieldOutputTypes['public']['AppMeta']['key'];
+    value: FieldOutputTypes['public']['AppMeta']['value'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_CartItems = {
     id: FieldOutputTypes['public']['CartItems']['id'];
     productId: FieldOutputTypes['public']['CartItems']['productId'];
@@ -378,6 +383,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AppMeta: Models.public_AppMeta;
     CartItems: Models.public_CartItems;
     Image: Models.public_Image;
     Product: Models.public_Product;
@@ -404,6 +410,26 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AppMeta: {
+              columns: {
+                readonly key: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly value: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['key'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly CartItems: {
               columns: {
                 readonly id: {
@@ -719,6 +745,7 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AppMeta: { readonly namespace: 'public' & NamespaceId; readonly model: 'AppMeta' };
     readonly CartItems: { readonly namespace: 'public' & NamespaceId; readonly model: 'CartItems' };
     readonly Image: { readonly namespace: 'public' & NamespaceId; readonly model: 'Image' };
     readonly Product: { readonly namespace: 'public' & NamespaceId; readonly model: 'Product' };
@@ -729,6 +756,27 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AppMeta: {
+            readonly fields: {
+              readonly key: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly value: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'AppMeta';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly key: { readonly column: 'key' };
+                readonly value: { readonly column: 'value' };
+              };
+            };
+          };
           readonly CartItems: {
             readonly fields: {
               readonly id: {
