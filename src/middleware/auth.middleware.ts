@@ -9,15 +9,6 @@ interface JwtPayload {
   role: UserRole;
 }
 
-export const signToken = (userId: string, role: UserRole): string => {
-  const options: jwt.SignOptions = {
-    expiresIn: config.JWT_EXPIRES_IN as NonNullable<
-      jwt.SignOptions["expiresIn"]
-    >,
-  };
-  return jwt.sign({ sub: userId, role }, config.JWT_SECRET, options);
-};
-
 export const authenticate: RequestHandler = (
   req: Request,
   _res: Response,
