@@ -1,31 +1,13 @@
-import { Redis } from "ioredis";
+import { redis } from "../redis.js";
 import { config } from "../configuration/config.js";
 import { logger } from "../logger.js";
 
 const CATALOG_KEY_PREFIX = "catalog:";
 
-let redis: Redis | undefined;
-
-if (config.REDIS_URL) {
-  redis = new Redis(config.REDIS_URL, {
-    lazyConnect: true,
-    maxRetriesPerRequest: 2,
-  });
-  redis.on("error", (err) => {
-    logger.warn({ err }, "Redis connection error — caching disabled");
-  });
-  redis.connect().catch((err) => {
-    logger.warn({ err }, "Redis unavailable — caching disabled");
-  });
-} else {
-  logger.warn("REDIS_URL is not set — catalog caching disabled");
-}
-
 export const buildCatalogCacheKey = (queryString: string): string =>
   `${CATALOG_KEY_PREFIX}${queryString}`;
 
 export const getCached = async (key: string): Promise<string | null> => {
-  if (!redis) return null;
   try {
     return await redis.get(key);
   } catch {
@@ -34,7 +16,6 @@ export const getCached = async (key: string): Promise<string | null> => {
 };
 
 export const setCached = async (key: string, value: string): Promise<void> => {
-  if (!redis) return;
   try {
     await redis.set(key, value, "EX", config.CACHE_TTL_SECONDS);
   } catch {
@@ -43,7 +24,6 @@ export const setCached = async (key: string, value: string): Promise<void> => {
 };
 
 export const invalidateCatalogCache = async (): Promise<void> => {
-  if (!redis) return;
   try {
     let cursor = "0";
     do {
@@ -66,7 +46,5 @@ export const invalidateCatalogCache = async (): Promise<void> => {
 };
 
 export const closeCache = async (): Promise<void> => {
-  if (redis) {
-    await redis.quit();
-  }
+  await redis.quit();
 };
