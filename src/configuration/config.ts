@@ -11,7 +11,7 @@ export const config = {
   JWT_SECRET: String(process.env.JWT_SECRET ?? "change-me-in-production"),
   JWT_EXPIRES_IN: String(process.env.JWT_EXPIRES_IN ?? "7d"),
 
-  REDIS_URL: process.env.REDIS_URL ? String(process.env.REDIS_URL) : undefined,
+  REDIS_URL: String(process.env.REDIS_URL),
   CACHE_TTL_SECONDS: Number(process.env.CACHE_TTL_SECONDS ?? 90),
 
   CORS_ORIGIN: String(process.env.CORS_ORIGIN ?? "*"),
